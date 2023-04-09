@@ -1,0 +1,58 @@
+These files contain the 'VMoo-multimedia'-support (VMoo 1.5+)
+for use with the JHcore MCP-implementation as it can be found
+at http://www.awns.com/mcp/ .
+
+Provided are the following files:
+  README (This file)
+  mmedia.moo (multimedia-support)
+
+'Installing' this package is very easy.
+First you replace the following tokens with the corresponding
+object numbers:
+  __PACKAGE__  -> The generic MCP-package
+  __MMEDIA__   -> The number of the freshly created package
+  __REGISTRY__  -> The MCP registry ($mcp.registry)
+
+Then you merely dump the package using your designated MCP-player and
+add it to the registry using '@add-package __MMEDIA__ to __REGISTRY__'.
+No wizardly perms or changes to the core are required for this package.
+
+------
+About this package.
+------
+
+-__MMEDIA__:preload(<who>, <URL>, <alias> [, <Ack-id>])
+ Preload some file for future use and attach an alias to it.
+ 
+-__MMEDIA__:stop_preload(<who> [, <alias>])
+ Undo some previous preload (or all if no <alias> is given).
+
+-__MMEDIA__:play/show/music(<player>, <URL>/<alias> [, <Ack-id>]) is used
+ to send an URL to <player>.
+
+  play - A file is played in background. Typically used for music files or
+         sound effects.
+  music - A file is played in foreground. Typically used for music files or
+          sound effects.
+  show  - A movie/picture is shown in the VMoo-mmediabox.
+  
+ returnvalues:
+   1      -> URL sent (this doesn't even ensure that the URL exists)
+   E_PERM -> You don't control <player>.
+   E_TYPE -> <player> doesn't support this type of file using this method.
+   
+-__MMEDIA__:stop_play/stop_show/stop_music(<player> [, <Ack-id>])
+ Abort some action of the matching method.
+
+-__MMEDIA__.default_base: If set, all other URL's after logging in may be
+ given relative to this adres.
+-__MMEDIA__.logo: Contains the URL of the logo of your MOO (will be sent at login)
+
+
+NB. The properties .show_info/.play_info/.music_info will contain some information
+    about the actions in progress. There will be additional documentation about this
+    information and the package on www.vmoo.com .
+
+
+At your service,
+Robbert de Haan (robbert@vmoo.com)

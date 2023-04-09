@@ -1,0 +1,218 @@
+DNS-ORG-MUD-MOO-SIMPLEEDIT 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+    IN-DB API
+    LAMBDACORE MODIFICATIONS
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+A very simple local editing protocol.
+
+    S->C 
+    #$#dns-org-mud-moo-simpleedit-content (reference, name, type content*)
+
+'reference' is the tag used when sending back to the server.  The
+server decodes this value to determine how to handle the new
+information.  User may be allowed to edit it (i.e., save this same
+text into a different property), with possibility of disastrous
+results.  When editing properties 'reference' has the general format:
+
+    [str|val]:#xx[.pname]
+
+    The following examples are valid references:
+
+	str:#123.description
+
+	    meaning, when saved back into the database this data is
+	    considered to be a STR or a list of STR.  The data is
+	    to be saved to the property #123.description.
+
+	    for example when #123.list == "A mighty fellow"
+			or   #123.list == { "A mighty fellow",
+				            "Though a little longwinded..." }
+
+	val:#1432.list
+
+	    meaning, when saved back into the database this data is
+	    considered to be a MOO datatype.  When the data is
+	    received from the client it will be in the form of a
+	    list of strings, so the server should convert the list
+	    to its real MOO value, typically using
+	    $note_editor:to_value(...).  The data is to be saved
+	    to the property #1432.list.
+
+	    for example when #1432.list == {1, 2, 3, 4}
+
+	sendmail
+
+	    meaning, when saved back to the database this data is
+	    considered to be a MOO-mail message, such as may be
+	    processed by the '$player:@@sendmail' command.  When
+	    the data is received from the client it will be in the
+	    form of a list of strings, consisting of MIME-like
+	    mail-headers followed by message data.
+
+When editing verbs 'reference' has the format:
+
+    #xx:vname
+
+    For example:
+
+	#123:description
+
+	    meaning, when saved back into the database this data
+	    is considered to be a lists of STR.  The data is to be
+	    saved to the verb. #123:description
+
+'content' is the content interpreted according to the type info
+given.  It's multiline (hence the *).
+
+'name' is a human-readable name for the info, suitable for window
+title, buffer name, etc.
+
+'type' is one of the following (for version 1.0):
+
+    string
+    string-list
+    moo-code
+
+
+Clients that don't provide special support for moo-code editing
+can treat moo-code identically to string-list.
+
+    C->S 
+    #$#dns-org-mud-moo-simpleedit-set (reference, type, content*)
+
+'reference', 'type' and 'content' are as above.  This is the message
+sent by the client to set when the user 'saves' the value.  Note
+this does not necessarily save the value.  Errors such as lack of
+permission to set the given reference or moo-code compliation errors
+may prevent it.  It is expected that the server will tell the user
+this (in the in-band text stream).
+
+Clients will probably want to provide a way to just send without
+closing the window, buffer, etc for this reason.
+
+
+JHCore implementation notes
+
+JHCore currently understands several different kinds of (local)
+editing sessions:
+
+    handled by $verb_editor:
+        verb editing
+    handled by $note_editor:
+        list of strings editing for notes and properties
+    handled by both $note_editor and $list_editor(?):
+        value editing for properties
+    handled by $mail_editor:
+        sending a mail message
+
+@edit uses a semi-complicated system to determine (a) what the user
+is trying to edit and (b) how to edit it.
+
+So it looks like the critical things to modify are
+$generic_editor:invoke_local_editor, $note_editor:local_editing_info,
+$verb_editor:local_editing_info, and $mail_editor:local_editing_info.
+
+The current return path for locally edited stuff (in the core)
+appears to be:
+
+    @program
+    @set-note-text
+    @set-note-value
+    @@sendmail
+
+
+MANIFEST
+
+    README				this file
+    dns-org-mud-moo-simpleedit.moo	a MOO code @dump
+    wiz.moo				a list of wizard-owned verbs
+    lmcore.moo				MOO code modifications to LambdaCore
+    jhcore.editors.moo			JHCore verbs for reference
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file
+dns-org-mud-moo-simpleedit.moo.  You'll need to load the file into
+a text editor and use search and replace functions to replace the
+following strings with their relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+    __WIZARD__		object id of chosen Wizard character
+
+As a wizard, execute the commands in wiz.moo.
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.
+
+
+IN-DB API
+
+package:send_content(reference, name, type, content)
+
+The following example sends the content of the player's .description
+property:
+
+    session = $mcp:session_for(player);
+    package = $mcp:match_package("dns-org-mud-moo-simpleedit");
+    if (session:handles_package(package) != {1, 0})
+      player:tell("Sorry, you need dns-org-mud-moo-simpleedit/1.0");
+      return;
+    else
+      reference = tostr("str:", player, ".description");
+      name = tostr("MOO property ", player.name, ".description");
+      type = (typeof(player.description) == STR) ? "string" | "string-list";
+      content = player.description;
+      "we need to be wizardly to call this";
+      package:send_content(session, reference, name, type, content);
+    endif
+
+the permissions check in :send_content requires that the calling
+verb should be wizardly (because session object are owned by
+__WIZARD___).  if you want non-wizard owned code to be able to call
+set_content then you could try using the following check in
+:send_content :
+
+    "typically args[1] == player.session, it's ok if the user is";
+    "trying to :send_content to their own session object";
+    if ((caller_perms() == args[1].connection) || 
+        $perm_utils:controls(caller_perms(), args[1]))
+      pass(@args);
+    else
+      raise(E_PERM);
+    endif
+
+
+LAMBDACORE MODIFICATIONS
+
+The file lmcore.moo contains MOO code modifications suitable for
+a LambdaCore based MOO.  The modifications enable existing local
+editor commands, like '@edit' and '@send', to make use of the
+dns-org-mud-moo-simpleedit package.
+
+To install lmcore.moo you should first MAKE BACKUP COPIES OF ALL
+THE MODIFIED VERBS of the verbs and then apply the new verb
+definitions.  These modifications should be good for recent versions
+of LambdaCore, but you may need to make minor modifications to suit
+your own customised database.
+
+lmcore.moo was supplied by Russell Pickett <emerson@hayseed.net>

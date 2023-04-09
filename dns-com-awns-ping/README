@@ -1,0 +1,84 @@
+DNS-COM-AWNS-PING 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+The package dns-com-awns-ping allows both client and server to test
+the latency of a user's connection, a rough indication of net-lag.
+Accordingly the server can choose to 'back off' a bandwidth-heavy
+activity to a slow user, to make the best of what little connectivity
+the connection has to spare.
+
+dns-com-awns-ping is symmetric, with both ends of the connection
+supporting the following messages:
+
+    #$#dns-com-awns-ping <authkey> id: <unique id>
+    #$#dns-com-awns-ping-reply <authkey> id: <unique id>
+
+In order to estimate the round-trip-time for a message the client
+(or server) should first generate a unique id and make a note of
+the current system time (Tping), then send the dns-com-awns-ping
+message.  At the other end of the connection the recipient should
+immediately reply with dns-com-awns-ping-reply substituting the
+value of id.  Upon receipt of the dns-com-awns-ping-reply message
+the client (or server) should make a note of the current system
+time (Treply), and can then estimate the round-trip-time as:
+
+    rtt = Treply - Tping
+
+A different unique id should generated for each subsequent
+dns-com-awns-ping message.
+
+The MOO implementation contains the following useful API calls:
+
+    package:ping(session)
+
+	send the message dns-com-awns-ping to the client, recording
+	the current time.  the package can estimate the round-trip-time
+	which can be accessed via :avg and :slow
+
+    package:avg(session)
+
+	returns a float.  the average round-trip-time for the last
+	5 dns-com-awns-ping messages.
+
+    package:slow(session)
+
+	returns 1 if the average round-trip-time is greater than
+	1 second, else returns 0.
+
+
+MANIFEST
+
+    README			this file
+    dns-com-awns-ping.moo	a MOO code @dump
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file dns-com-awns-ping.moo.
+You'll need to load the file into a text editor and use search and
+replace functions to replace the following strings with their
+relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.

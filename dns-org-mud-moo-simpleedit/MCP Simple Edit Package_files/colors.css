@@ -1,0 +1,32 @@
+#banner, #navigation 			{  background: #C9BFB3; 	}
+#banner H1 A  			{  color:#000000;				}
+#banner .description {	color:#334745;				}	
+body 						{	background: #F5E7D6;		}
+.sectiontitle 			{	background:#A7ABAF; }
+
+.example, .grammar, .algorithim {
+   background: #efefef;
+}
+
+<!--
+.#F7DFD4 {
+  Color: #F7DFD4;
+}
+
+.#000000 {
+  Color: #000000;
+}
+
+.#FFFFFF {
+  Color: #FFFFFF;
+}
+
+.#98B9C0 {
+  Color: #98B9C0;
+}
+
+.#D5B6A7 {
+  Color: #D5B6A7;
+}
+
+-->

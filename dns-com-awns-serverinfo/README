@@ -1,0 +1,73 @@
+DNS-COM-AWNS-SERVERINFO 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+The package dns-com-awns-serverinfo provides the client with a pair
+or URLs, the web pages for the server's designated home page and
+online help page, if such exist.  The client can make these URLs
+available from its own Help menu, or from a Function Key or a big
+glossy 'Help!!' button.
+
+The client should not pop-open a webbrowser as soon as it receives
+the dns-com-awns-serverinfo message however, leave that action up
+to the user.  A package like dns-com-awns-displayurl is better for
+providing URLs to the client to be displayed immediately.
+
+
+Client to Server messages
+
+dns-com-awns-serverinfo-get
+
+    usually sent by the client after the MCP negotiation phase,
+    the server should respond with a dns-com-awns-serverinfo
+    message.
+
+
+Server to Client messages
+
+dns-com-awns-serverinfo home_url: STR <URL of Home Page>
+                        help_url: STR <URL of Help Page>
+
+MANIFEST
+
+    README			this file
+    dns-com-awns-serverinfo.moo	a MOO code @dump, the package
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file dns-com-awns-serverinfo.moo.
+You'll need to load the file into a text editor and use search and
+replace functions to replace the following strings with their
+relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.
+
+To set the Home Page and Help Page URLs type:
+
+    @set __NEW__.home_url to "http://www.someplace.foo/"
+    @set __NEW__.help_url to "http://www.someplace.foo/help"
+
+Either property may also be left blank, set to "", to signify that
+no URL is available.

@@ -1,0 +1,158 @@
+DNS-COM-AWNS-REHASH 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+    SUPPORT OBJECTS
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+The package dns-com-awns-rehash provides clients with up-to-date
+information about the set of server commands which can be typed by
+the user.  Clients can use this information for tricks like
+command-completion, or the implementation of 'say'/'do' interfaces.
+
+I wanted my chat client to look at the line I was typing in and
+decide if I mean to 'say' it or 'do' it.  If it can tell the
+difference then the client can type the 'say ' or '"' for me and
+save me the trouble.  I think that however used you are to typing
+'say' or '"' it's still not a very natural way of conversing, it
+just doesn't feel right.
+
+It turns out that it's quite easy to give the client enough clues
+to make the decision if you can send it up-to-date information
+about the set of visible commands that the player object can see.
+
+
+Client to Server messages
+
+dns-com-awns-rehash-getcommands
+
+    usually sent by the client after the MCP negotiation phase,
+    the server should respond with a dns-com-awns-rehash-commands
+    message.
+
+
+Server to Client messages
+
+dns-com-awns-rehash-commands list: STR <whitespace delimited list>
+
+    detail the complete list of commands currently visible to the
+    player.  the list of commands is a string, with commands
+    separated by whitespace.  for example:
+
+        list: "open close r*ead"
+
+    the client should understand that r*ead means 'r' 're' 'rea' 'read'
+
+dns-com-awns-rehash-add list: STR <whitespace delimited list>
+
+    detail additional commands newly visible to the player.  the
+    client should add these commands to any commands already
+    recorded.
+
+dns-com-awns-rehash-remove list: STR <whitespace delimited list>
+
+    detail commands which are no longer visible to the player.
+    the client should remove these commands from any commands
+    already recorded.
+
+
+MANIFEST
+
+    README			this file
+    dns-com-awns-rehash.moo	a MOO code @dump, the package
+    rehashfo.moo		a MOO code @dump, the Rehash Feature Object
+    rehasheh.jhcore.moo		a MOO code @dump, the Rehash Event Handler
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file dns-com-awns-rehash.moo.
+You'll need to load the file into a text editor and use search and
+replace functions to replace the following strings with their
+relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+
+The Rehash Feature Object is defined in the file rehashfo.moo, the
+id of the object you create when porting the file gives the value
+of '__RFO__'.
+
+The Rehash Event Handler is defined in the file rehasheh.moo, the
+id of the object you create when porting the file gives the value
+of '__REH__'.
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.
+
+Users who wish to receive command list updates when they move to
+different rooms should also type:
+
+    @add-feature __RFO__
+
+
+SUPPORT OBJECTS
+
+The package requires several support objects.  The objects provide
+an interface between the MOO and the protocol.  The nature of the
+overall application can be changed by modifying the support objects'
+behaviour, leaving the underlying protocol (literally the messages
+to and from the server) unchanged.
+
+The Rehash Feature Object (__RFO__) and the Rehash Event Handler
+(__REH__) provide event awareness.  Feature Objects in JHCore are
+able to register event handlers for a user, without requiring any
+modification of the user's object.
+
+The RFO uses the REH to detect when objects enter or leave the same
+room that the player is in.  REH:rehash() is called to work out
+the set of possible commands that are visible to the player.
+rehash() checks for commands on the player object's contents, the
+player's location, the location's contents and on any feature
+objects used by the player.
+
+A record is kept of which commands have already been seen by the
+player and a message detailing those commands which are new or
+which are no longer visible is sent to the client.
+
+The RFO implements 3 commands of its own:
+
+@rehash
+
+    send any details about new commands or commands which are no
+    longer visible.  This is useful if you move an object into your
+    inventory without it passing through your player's location.
+    Such movement doesn't cause an 'enter' event and so won't be
+    processed by :rehash().  For example:
+    
+        create a new object and add a verb
+
+        @create $thing named wibble
+        @verb wibble:wobble
+        @rehash
+
+        the client now knows about the new 'wobble' command
+
+@rehash!
+
+    send details about all commands which are currently visible to
+    the player.
+
+@which <command>
+
+    detail the object supplying the given command name.

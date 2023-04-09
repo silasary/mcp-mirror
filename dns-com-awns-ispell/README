@@ -1,0 +1,43 @@
+DNS-COM-AWNS-ISPELL 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+The package dns-com-awns-ispell allows...
+
+	*** general description, message format and API goes here
+
+MANIFEST
+
+    README			this file
+    dns-com-awns-ispell.moo	a MOO code @dump
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file dns-com-awns-ispell.moo.
+You'll need to load the file into a text editor and use search and
+replace functions to replace the following strings with their
+relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.

@@ -1,0 +1,115 @@
+DNS-COM-AWNS-VISUAL 1.0
+
+CONTENTS
+    INTRODUCTION
+    MANIFEST
+    INSTALL
+    SUPPORT OBJECTS
+    UPDATING THE WHO LIST
+
+INTRODUCTION
+
+This is an MCP/2.1 package written for the JHCore MCP/2.1 implementation
+for MOO.
+
+You can find out more about MCP/2.1 here:
+
+    http://www.awns.com/mcp/
+
+The package dns-com-awns-visual provides clients with up-to-date
+information about places, topology and people online.  Clients can
+display this information in the form of navigable maps or user
+listings.
+
+Client to Server messages
+
+  #$#dns-com-awns-visual-getusers <auth> 
+  #$#dns-com-awns-visual-getlocation <auth> 
+  #$#dns-com-awns-visual-gettopoloy <auth> location: <location> distance: <hops>
+  #$#dns-com-awns-visual-getself <auth>
+
+Server to Client messages
+
+  #$#dns-com-awns-visual-location <auth> id: <id>
+  #$#dns-com-awns-visual-users <auth> id: * name: * location: * idle: *
+  #$#dns-com-awns-visual-topology <auth> id: * name: * exit: * idle: *
+  #$#dns-com-awns-visual-self <auth> id: <id>
+
+
+MANIFEST
+
+    README			this file
+    dns-com-awns-visual.moo	a MOO code @dump, the package
+    topology.jhcore.moo		a MOO code @dump, the Topology Driver
+    visualfo.jhcore.moo		a MOO code @dump, the Visual Feature Object
+    visualeh.jhcore.moo		a MOO code @dump, the Visual Event Handler
+
+
+INSTALL
+
+As a non-wizard user port the MOO-code in the file dns-com-awns-visual.moo.
+You'll need to load the file into a text editor and use search and
+replace functions to replace the following strings with their
+relevant values:
+
+    __PACKAGE__		object id of generic MCP package
+    __NEW__		object id of newly @create'd package
+    __REGISTRY__	object id of $mcp.registry
+    __TOP__		object id of the Topology Driver
+
+The Topology Driver is defined in the file topology.jhcore.moo,
+the id of the object you create when porting the file gives the
+value of '__TOP__'.
+
+To add the package to the MCP Registry, become a wizard and type:
+
+    @add-package __NEW__ to __REGISTRY__
+
+The package should be detected by your client the next time you
+connect to the MOO.
+
+Users who wish to receive location updates when they move to
+different rooms should also type:
+
+    @add-feature __VFO__
+
+
+SUPPORT OBJECTS
+
+The package requires several support objects.  The objects provide
+an interface between the MOO and the protocol.  The nature of the
+overall application can be changed by modifying the support objects'
+behaviour, leaving the underlying protocol (literally the messages
+to and from the server) unchanged.
+
+The Visual Feature Object and the Visual Event Handler (__VEH__)
+provide event awareness.  Feature Objects in JHCore are able to
+register event handlers for a user, without requiring any modification
+of the user's object.
+
+The Visual Event Handler is notified whenever
+the user moves into a new room and is able to generate a new
+'dns-com-awns-visual-location' message which tells the client that
+the user's location has been changed.
+
+The Topology Driver (__TOP__) provides the interface between the
+package and the MOO's model for topology.  Drivers for other cores
+my choose to apply different rules when determining the set of
+available exits from a room.
+
+
+UPDATING THE WHO LIST
+
+A background task needs to be started which will periodically
+broadcast the list of users to interested clients.  As the owner
+of the Visual Feature Object issue the following command to start
+this task:
+
+    ;__VFO__:update_who()
+
+Users can then add or remove themselves from the list of interested
+clients which will receive updates by using the @visual_who command
+defined on the Visual Feature Object.  For example, as a user of
+the Visual Feature Object issue the following command:
+
+    @visual_who

@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <link rev="made" href="mailto:eostrom@acm.org">
+<link rel="stylesheet" href="MCP%20Simple%20Edit%20Package_files/colors.css" type="text/css" media="all">
+<link rel="stylesheet" href="MCP%20Simple%20Edit%20Package_files/layout.css" type="text/css" media="all"> 
+
+    <title>MCP Simple Edit Package</title>
+</head>
+
+<body>
+<div id="banner">
+<h1>MCP Simple Edit Package</h1>
+<span class="description">Local editing MCP package</span></div>
+
+<div id="content">
+
+
+    (<code>dns-mud-moo-org-simpleedit</code> 1.0)
+
+    <p>This MCP 2.1 package is designed as a simple replacement for
+    the local editing facilities found in LambdaCore and in MCP
+    1.0. Like those facilities, it simply provides a way for a
+    server to send a client some text for the user to edit, and for
+    the client to send back the edited text. In contrast, however,
+    the send-back facility uses MCP itself, rather than simply
+    sending back in-band commands.</p>
+
+    <p>There are only two messages in the <code>simpleedit</code>
+    package: <code>content</code>, sent by the server to the client
+    to provide text to be edited, and <code>set</code>, sent by the
+    client to the server when the text has been edited.</p>
+
+    <dl>
+        <dt>
+        <b>dns-org-mud-moo-simpleedit-content</b>(<var>reference</var>,
+        <var>name</var>, <var>content</var>*, <var>type</var>)</dt>
+
+        <dd>
+            <p>This message is sent by the server to the client to
+            provide some text for the user to edit.</p>
+
+            <p><var>Reference</var> is a machine-readable string
+            that will be used in the <code>set</code> message to
+            identify the text sent back to the server when the user
+            is done editing. <var>Name</var> is a human-readable
+            string to show the user what text is being edited.
+            <var>Content</var> is a multi-line value containing the
+            actual text to be edited.</p>
+
+            <p><var>Type</var> identifies the type of the
+            information, using one of three identifiers:
+            <code>string</code>, <code>string-list</code>, or
+            <code>moo-code</code>. A <code>string</code> is a
+            single-line value; a <code>string-list</code> is
+            multiple lines of text with no specified structure; and
+            <code>moo-code</code> is program code in the MOO
+            language. Clients that provide no special support for
+            MOO programming can treat <code>moo-code</code> as
+            equivalent to <code>string-list</code>.</p>
+
+            <p>Example:</p>
+            <pre>    #$#dns-org-mud-moo-simpleedit-content 3487 reference: #73.name
+       name: "Joe's name" type: string content*: "" _data-tag: 12345
+    #$#* 12345 content: Joe
+    #$#:
+</pre>
+
+            <p>This allows the user to edit Joe's name, currently
+            set to "Joe". The value "Joe's name" will be presented
+            to the user, perhaps as the title bar of a window. Note
+            that although "Joe" is a string and thus only a single
+            line, it is still sent as a multiline value.</p>
+        </dd>
+
+        <dt>
+        <b>dns-org-mud-moo-simpleedit-set</b>(<var>reference</var>,
+        <var>content</var>*, <var>type</var>)</dt>
+
+        <dd>
+            <p>This message is sent from the client to the server
+            when the user requests it (e.g., with a "Send" or
+            "Save" button or command). <var>Reference</var>,
+            <var>content</var>, and <var>type</var> are as above;
+            in particular, the <var>reference</var> should be the
+            reference provided by the earlier <code>content</code>
+            message.</p>
+
+            <p>Example:</p>
+            <pre>    #$#dns-org-mud-moo-simpleedit-set 3487 reference: #73.name
+       type: string content*: "" _data-tag: 54321
+    #$#* 54321 content: Erik
+    #$#:
+</pre>
+
+            <p>In this example, someone has changed Joe's name to
+            Erik.</p>
+        </dd>
+    </dl>
+</div>
+
+<div id="navigation">
+<div class="sectiontitle">MCP site</div>
+<div class="side">
+<a href="https://www.moo.mud.org/mcp/index.html">MCP</a><br>
+<a href="https://www.moo.mud.org/mcp/mcp2.html">MCP 2.1 spec</a><br>
+<a href="https://www.moo.mud.org/mcp/simpleedit.html">Simpleedit</a>
+</div>
+
+<div class="sectiontitle">MOO</div>
+<div class="side">
+<a href="https://www.moo.mud.org/">MOO home</a>
+</div>
+
+</div>
+
+
+
+</body></html>
